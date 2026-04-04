@@ -2,19 +2,49 @@ blood_collection_dash_app:
   title: "Blood Collection Dashboard"
   description: "Biomarker collection progress monitor for simulated clinical trial"
 
+  # --- Simulation ---
+  num_participants: 100
+  participant_id_prefix: "BL_"
+
   # --- Data ---
-  csv_file_path: "input_files/visit_log.csv"
-  participant_id_col: "pseudo_ID"
-  values:
-    collected: "Blood_collected"
-    not_collected: "Not_collected"
-  random_seed: 42          # seed used to fill simulated missing data
+  input_datas:
+    blood_collection_data:
+      is_source: true           # primary dataset; outputs are constrained to collected visits
+      label: "Blood collected"
+      csv_file_path: "output_files/blood_collected_at_visit.csv"
+      participant_id_col: "pseudo_ID"
+      values:
+        collected: "Blood_collected"
+        not_collected: "Not_collected"
+      random_seed: 42          # seed used to fill simulated missing data
+    blood_collection_output_plasma:
+      csv_file_path: "output_files/blood_plasma_processed.csv"
+      participant_id_col: "pseudo_ID"
+      values:
+        collected: "Plasma_processed"
+        not_collected: "Not_collected"
+      random_seed: 42          # seed used to fill simulated missing data
+    blood_collection_output_serum:
+      csv_file_path: "output_files/blood_serum_processed.csv"
+      participant_id_col: "pseudo_ID"
+      values:
+        collected: "Serum_processed"
+        not_collected: "Not_collected"
+      random_seed: 42          # seed used to fill simulated missing data
+    blood_collection_output_pbmc:
+      csv_file_path: "output_files/blood_pbmc_processed.csv"
+      participant_id_col: "pseudo_ID"
+      values:
+        collected: "PBMC_processed"
+        not_collected: "Not_collected"
+      random_seed: 42          # seed used to fill simulated missing data 
+  
 
   # --- App server ---
   app:
-    host: "127.0.0.1"
+    host: "0.0.0.0"
     port: 8050
-    debug: true
+    debug: false
 
   # --- Colors ---
   colors:
