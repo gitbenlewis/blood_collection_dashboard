@@ -1,0 +1,37 @@
+blood_collection_dash_app:
+  title: "Blood Collection Dashboard"
+  description: "Biomarker collection progress monitor for simulated clinical trial"
+
+  # --- Data ---
+  csv_file_path: "input_files/visit_log.csv"
+  participant_id_col: "pseudo_ID"
+  values:
+    collected: "Blood_collected"
+    not_collected: "Not_collected"
+  random_seed: 42          # seed used to fill simulated missing data
+
+  # --- App server ---
+  app:
+    host: "127.0.0.1"
+    port: 8050
+    debug: true
+
+  # --- Colors ---
+  colors:
+    collected: "#2ecc71"       # green
+    not_collected: "#e74c3c"   # red
+    background: "#f0f2f5"
+    card_bg: "#ffffff"
+    header_bg: "#1a1a2e"
+    header_text: "#ffffff"
+    accent: "#3498db"
+    text: "#2c3e50"
+    subtext: "#7f8c8d"
+
+  # --- Chart display ---
+  charts:
+    heatmap_row_height: 14    # px per participant row in heatmap
+    heatmap_min_height: 400
+    bar_height: 360
+    font_family: "Inter, Helvetica Neue, Arial, sans-serif"
+    font_size: 13
