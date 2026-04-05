@@ -1,0 +1,13 @@
+name: dash
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pyyaml
+  - dash 
+  - dash-bootstrap-components
+  - plotly
+  - pandas
