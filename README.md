@@ -53,7 +53,7 @@ The source dataset (`is_source: true` in config) is generated first. A source ma
 ## Running the App
 
 ```bash
-python app.py
+python app_dash.py
 ```
 
 The dashboard launches at `http://localhost:8050` by default.
@@ -111,7 +111,7 @@ git push heroku main
 
 ```
 blood_collection_dashboard/
-├── app.py                    # Main Dash application
+├── app_dash.py               # Main Dash application
 ├── config/
 │   └── config.yaml           # All app configuration
 ├── scripts/
