@@ -40,11 +40,18 @@ blood_collection_dash_app:
       random_seed: 42          # seed used to fill simulated missing data 
   
 
-  # --- App server ---
+  # --- App server (Dash web app) ---
   app:
     host: "0.0.0.0"
     port: 8050
     debug: false
+
+  # --- Desktop window (Flask-WebGUI / pywebview) ---
+  window:
+    width: 1400
+    height: 900
+    resizable: true
+    fullscreen: false
 
   # --- Colors ---
   colors:
