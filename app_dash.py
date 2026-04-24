@@ -91,10 +91,11 @@ def make_heatmap(ds):
     ))
     fig.update_layout(
         height=height,
+        width=CHARTS.get("heatmap_width", 1200),
         margin=dict(l=10, r=10, t=10, b=10),
         paper_bgcolor=COLORS["card_bg"], plot_bgcolor=COLORS["card_bg"],
         font=dict(family=CHARTS["font_family"], size=CHARTS["font_size"], color=COLORS["text"]),
-        xaxis=dict(side="top", tickangle=-45),
+        xaxis=dict(side="top", tickangle=-45, tickfont=dict(size=9)),
         yaxis=dict(autorange="reversed", tickfont=dict(size=10)),
     )
     return fig

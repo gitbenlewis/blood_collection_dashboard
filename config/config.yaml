@@ -40,11 +40,18 @@ blood_collection_dash_app:
       random_seed: 42          # seed used to fill simulated missing data 
   
 
-  # --- App server ---
+  # --- App server (Dash web app) ---
   app:
     host: "0.0.0.0"
     port: 8050
     debug: false
+
+  # --- Desktop window (Flask-WebGUI / pywebview) ---
+  window:
+    width: 1400
+    height: 900
+    resizable: true
+    fullscreen: false
 
   # --- Colors ---
   colors:
@@ -62,6 +69,7 @@ blood_collection_dash_app:
   charts:
     heatmap_row_height: 14    # px per participant row in heatmap
     heatmap_min_height: 400
+    heatmap_width: 1200       # fixed width for heatmap (px) — keeps x-axis tick density readable
     bar_height: 360
     font_family: "Inter, Helvetica Neue, Arial, sans-serif"
     font_size: 13
