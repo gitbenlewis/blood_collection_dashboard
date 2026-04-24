@@ -151,12 +151,17 @@ The PyInstaller specs (`Blood_Collection_Dashboard.spec`, `Blood_Collection_Dash
 
 Self-contained single-file export for email / cloud-storage sharing. Requires no Python or network on the receiving end — Plotly.js is inlined.
 
+A current snapshot is committed to the repo and can be downloaded directly:
+[`Blood_Collection_Dashboard_Static.html`](https://github.com/gitbenlewis/blood_collection_dashboard/blob/main/Blood_Collection_Dashboard_Static.html)
+
+To regenerate from the latest data:
+
 ```bash
 python export_static_html.py
 # → Blood_Collection_Dashboard_Static.html (~5 MB)
 ```
 
-Static snapshot: does not auto-refresh with new data. Re-run the export when data changes.
+Static snapshot: does not auto-refresh with new data. Re-run the export and commit when data changes.
 
 ### Which option to pick?
 
