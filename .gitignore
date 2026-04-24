@@ -35,8 +35,6 @@ MANIFEST
 !Blood_Collection_Dashboard.spec
 !Blood_Collection_Dashboard_Web.spec
 
-# Generated static HTML snapshot (produced by export_static_html.py)
-Blood_Collection_Dashboard_Static.html
 
 # Installer logs
 pip-log.txt

@@ -2,6 +2,8 @@
 
 Config-driven Plotly Dash web application for monitoring biomarker collection progress in a simulated clinical trial.
 
+**Live demo:** <https://blood-collection-dashboard.onrender.com/>
+
 ![Blood Collection Dashboard](blood_collection_dashboard.png)
 
 ## Overview
@@ -104,7 +106,7 @@ The project supports three distribution paths. Pick the one that matches how the
 
 ### Option 1 — Web deploy (Dash)
 
-Heroku/Render-ready via the `Procfile`. The app reads `PORT` from the environment or defaults to `8050`.
+Heroku/Render-ready via the `Procfile`. The app reads `PORT` from the environment or defaults to `8050`. A live instance is running on Render: <https://blood-collection-dashboard.onrender.com/>.
 
 ```bash
 heroku create
