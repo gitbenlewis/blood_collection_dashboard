@@ -2,7 +2,7 @@
 
 Config-driven Plotly Dash web application for monitoring biomarker collection progress in a simulated clinical trial.
 
-![Blood Collection Dashboard](blood_collection_dashboard.png)
+![Blood Collection Dashboard](docs/images/blood_collection_dashboard.png)
 
 ## Overview
 
@@ -24,22 +24,23 @@ Each biomarker type is presented in its own tab with:
 | Plotly | 6.6.0 |
 | Pandas | 2.3.3 |
 | PyYAML | 6.0.3 |
+| Gunicorn | 26.2.0 |
 
 ## Setup
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 ## Data Generation
 
-Generate simulated datasets with seeded randomness for reproducibility:
+Regenerate simulated datasets with seeded randomness for reproducibility. This overwrites the configured CSVs. The existing source CSV header supplies the visit names, so retain it when regenerating:
 
 ```bash
 python scripts/generate_data.py
 ```
 
-This creates four CSVs in `output_files/`:
+This creates four CSVs in `data/simulated/`:
 
 | File | Description |
 |---|---|
@@ -56,7 +57,15 @@ The source dataset (`is_source: true` in config) is generated first. A source ma
 python app_dash.py
 ```
 
-The dashboard launches at `http://localhost:8050` by default.
+The dashboard launches at `http://localhost:8050` by default. CSVs are loaded at startup; restart the server after changing data.
+
+### Input validation
+
+Each CSV must contain its configured participant-ID column and at least one visit column. All remaining columns are treated as visits. IDs must be nonblank and unique; statuses must exactly match the configured collected/not-collected labels. Missing and unknown statuses cause a descriptive startup error rather than being filled or counted as failures. IDs are read as text to preserve leading zeros.
+
+Configure exactly one source dataset. Derived datasets must contain the same participants and visits, but row and column order may differ. A processed sample requires a collected source sample for that participant and visit. Validated data retains the original denominator: all participant-visit combinations.
+
+Randomness is used only by the simulation generator. The supplied derived datasets intentionally retain their existing shared seeds and identical collection masks.
 
 ## Config-Driven Architecture
 
@@ -79,7 +88,7 @@ blood_collection_dash_app:
     blood_collection_data:
       is_source: true
       label: "Blood collected"
-      csv_file_path: "output_files/blood_collected_at_visit.csv"
+      csv_file_path: "data/simulated/blood_collected_at_visit.csv"
       participant_id_col: "pseudo_ID"
       values:
         collected: "Blood_collected"
@@ -100,7 +109,15 @@ blood_collection_dash_app:
 
 ## Deployment
 
-The app is Heroku-ready with a `Procfile` included. It reads `PORT` from the environment or defaults to `8050`.
+The included `Procfile` serves `app_dash:server` using Gunicorn and binds to Heroku's `PORT`. The Python entry point remains available for local development. Install `requirements.txt` even if using the optional Conda environment in `config/env_yamls/`.
+
+To check the production server locally on macOS or Linux:
+
+```bash
+gunicorn app_dash:server --no-control-socket --bind 127.0.0.1:8050
+```
+
+Deploy to Heroku:
 
 ```bash
 heroku create
@@ -111,16 +128,31 @@ git push heroku main
 
 ```
 blood_collection_dashboard/
-├── app_dash.py               # Main Dash application
-├── config/
-│   └── config.yaml           # All app configuration
+├── app_dash.py               # Dashboard and WSGI entry point
+├── config/                  # Application and optional Conda configuration
+├── data/
+│   └── simulated/            # Tracked example CSVs; generator outputs
+├── docs/
+│   └── images/               # README screenshot
 ├── scripts/
-│   └── generate_data.py      # Simulated data generation
-├── output_files/             # Generated CSV datasets
+│   └── generate_data.py      # Seeded simulation generator
+├── tests/
+│   └── test_dashboard.py     # Validation, generator, chart, and callback tests
 ├── requirements.txt
 ├── Procfile
+├── README.md
 └── LICENSE
 ```
+
+## Tests
+
+Run from the repository root after installing dependencies:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+Generator tests write only to temporary directories.
 
 ## License
 

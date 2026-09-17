@@ -3,7 +3,6 @@ Blood Collection Dashboard
 Config-driven Plotly Dash app for monitoring clinical trial biomarker collection.
 """
 import os
-import random
 import yaml
 import pandas as pd
 import plotly.graph_objects as go
@@ -32,21 +31,40 @@ def load_dataset(ds_cfg):
     pid_col  = ds_cfg["participant_id_col"]
     val_c    = ds_cfg["values"]["collected"]
     val_nc   = ds_cfg["values"]["not_collected"]
-    seed     = ds_cfg.get("random_seed", 42)
-
-    df = pd.read_csv(csv_path)
-    random.seed(seed)
+    if val_c == val_nc:
+        raise ValueError(f"{csv_path}: collected and not_collected labels must differ")
+    try:
+        df = pd.read_csv(csv_path, dtype=str, keep_default_na=False)
+    except pd.errors.EmptyDataError as exc:
+        raise ValueError(f"{csv_path}: dataset is empty") from exc
+    if pid_col not in df.columns:
+        raise ValueError(f"{csv_path}: missing participant-ID column {pid_col!r}")
     visit_cols = [c for c in df.columns if c != pid_col]
-    for col in visit_cols:
-        df[col] = df[col].apply(
-            lambda v: random.choice([val_c, val_nc])
-            if pd.isna(v) or str(v).strip() == "" else v
-        )
+    if df.empty or not visit_cols:
+        raise ValueError(f"{csv_path}: requires at least one participant and one visit")
+    missing_ids = df[pid_col].str.strip().eq("")
+    if missing_ids.any():
+        rows = (df.index[missing_ids][:5] + 2).tolist()
+        raise ValueError(f"{csv_path}: missing participant IDs at CSV rows {rows}")
+    duplicate_ids = df[pid_col].duplicated(keep=False)
+    if duplicate_ids.any():
+        ids = df.loc[duplicate_ids, pid_col].unique()[:5].tolist()
+        raise ValueError(f"{csv_path}: duplicate participant IDs {ids}")
+    invalid = ~df[visit_cols].isin([val_c, val_nc])
+    if invalid.any().any():
+        row_indices, col_indices = invalid.to_numpy().nonzero()
+        cells = [
+            f"participant {df.iloc[r][pid_col]!r}, visit {visit_cols[c]!r}: {df.iloc[r][visit_cols[c]]!r}"
+            for r, c in zip(row_indices[:5], col_indices[:5])
+        ]
+        raise ValueError(f"{csv_path}: missing or unknown statuses: {'; '.join(cells)}")
     return df, visit_cols, pid_col, val_c, val_nc
 
 
 def compute_metrics(df, visit_cols, pid_col, val_c):
     total    = df[visit_cols].size
+    if total == 0:
+        raise ValueError("Cannot compute metrics without participants and visits")
     coll     = int((df[visit_cols] == val_c).sum().sum())
     not_coll = total - coll
     pct      = round(coll / total * 100, 1)
@@ -56,6 +74,31 @@ def compute_metrics(df, visit_cols, pid_col, val_c):
         "total": total, "collected": coll, "not_collected": not_coll,
         "pct": pct, "per_visit_pct": per_visit_pct, "per_participant_pct": per_pt_pct,
     }
+
+
+def validate_source_constraints(datasets, input_datas):
+    source_keys = [key for key, ds_cfg in input_datas.items() if ds_cfg.get("is_source", False)]
+    if len(source_keys) != 1:
+        raise ValueError("Configure exactly one dataset with is_source: true")
+    source_key = source_keys[0]
+    source = datasets[source_key]
+    source_df = source["df"].set_index(source["pid_col"])
+    available = source_df[source["visit_cols"]].eq(source["val_collected"])
+    for key, ds in datasets.items():
+        if key == source_key:
+            continue
+        derived = ds["df"].set_index(ds["pid_col"])
+        if set(derived.index) != set(source_df.index):
+            raise ValueError(f"{key}: participant IDs must match source dataset {source_key}")
+        if set(ds["visit_cols"]) != set(source["visit_cols"]):
+            raise ValueError(f"{key}: visits must match source dataset {source_key}")
+        # Align by identity, not CSV row or column order.
+        collected = derived.loc[source_df.index, source["visit_cols"]].eq(ds["val_collected"])
+        violations = collected & ~available
+        if violations.any().any():
+            rows, cols = violations.to_numpy().nonzero()
+            cells = [f"{source_df.index[r]!r}/{source['visit_cols'][c]}" for r, c in zip(rows[:5], cols[:5])]
+            raise ValueError(f"{key}: collected without source collection at {'; '.join(cells)}")
 
 
 # Load all datasets defined in config
@@ -71,6 +114,8 @@ for key, ds_cfg in cfg["input_datas"].items():
         "label": label,
     }
 
+validate_source_constraints(DATASETS, cfg["input_datas"])
+
 # ── Chart builders ────────────────────────────────────────────────────────────
 def make_heatmap(ds):
     df, visit_cols = ds["df"], ds["visit_cols"]
@@ -83,7 +128,7 @@ def make_heatmap(ds):
         len(pids) * CHARTS["heatmap_row_height"],
     )
     fig = go.Figure(go.Heatmap(
-        z=z, x=visit_cols, y=pids,
+        z=z, x=visit_cols, y=pids, zmin=0, zmax=1,
         colorscale=[[0, COLORS["not_collected"]], [1, COLORS["collected"]]],
         showscale=False, hoverongaps=False,
         hovertemplate="<b>%{y}</b><br>%{x}<br>%{customdata}<extra></extra>",
@@ -226,6 +271,7 @@ app = dash.Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     title=TITLE,
 )
+server = app.server
 
 app.layout = dbc.Container(
     fluid=True,

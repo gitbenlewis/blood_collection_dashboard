@@ -74,7 +74,7 @@ for key, ds_cfg in input_datas.items():
     os.makedirs(os.path.dirname(csv_path), exist_ok=True)
     random.seed(ds_cfg.get("random_seed", 42))
 
-    out_rows = [header]
+    out_rows = [[ds_cfg["participant_id_col"]] + visit_cols]
     for pid in pids:
         available = source_mask[pid]
         visits = [
