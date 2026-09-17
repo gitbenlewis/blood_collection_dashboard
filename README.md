@@ -61,6 +61,12 @@ python app_dash.py
 
 The dashboard launches at `http://localhost:8050` by default. CSVs are loaded at startup; restart the server after changing data.
 
+To run on a different local port, set `PORT` when launching:
+
+```bash
+PORT=8080 python app_dash.py
+```
+
 ### Dash input validation
 
 Each CSV must contain its configured participant-ID column and at least one visit column. All remaining columns are treated as visits. IDs must be nonblank and unique; statuses must exactly match the configured collected/not-collected labels. Missing and unknown statuses cause a descriptive startup error rather than being filled or counted as failures. IDs are read as text to preserve leading zeros.
